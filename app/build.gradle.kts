@@ -21,8 +21,8 @@ android {
         applicationId = "com.appletv.launcher"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.2-" + (System.getenv("GITHUB_SHA") ?: "local").take(7)
 
         buildConfigField("String", "TMDB_API_KEY", "\"$tmdbKey\"")
     }

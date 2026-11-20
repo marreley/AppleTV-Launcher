@@ -126,7 +126,7 @@ class HeroView(context: Context, private val s: Scale) : FrameLayout(context) {
         )
 
         applyAmbient(base)
-        changeText("AppleTV Launcher", "Bienvenue", "", "")
+        changeText("AppleTV Launcher", "Bienvenue", "Version ${BuildConfig.VERSION_NAME}", "")
     }
 
     /** Affiche un film ou une série à la une. */
