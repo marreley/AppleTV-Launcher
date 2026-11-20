@@ -39,6 +39,16 @@ class AppCardView(context: Context, private val s: Scale) : FrameLayout(context)
         addView(shine, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
     }
 
+    private val cardWidth = s.px(CARD_W)
+    private val cardHeight = s.px(CARD_H)
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(
+            View.MeasureSpec.makeMeasureSpec(cardWidth, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(cardHeight, View.MeasureSpec.EXACTLY)
+        )
+    }
+
     fun bind(entry: AppEntry) {
         contentDescription = entry.label
         background = GradientDrawable(

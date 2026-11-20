@@ -35,9 +35,9 @@ class AppAdapter(
     override fun getItemId(position: Int): Long = getItem(position).key.hashCode().toLong()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val card = AppCardView(parent.context, scale)
-        card.layoutParams = RecyclerView.LayoutParams(scale.px(CARD_W), scale.px(CARD_H))
-        return Holder(card)
+        // Pas de LayoutParams ici : le GridLayoutManager de leanback crée les siens.
+        // La carte impose elle-même sa taille (voir AppCardView.onMeasure).
+        return Holder(AppCardView(parent.context, scale))
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {

@@ -24,4 +24,5 @@ adb shell dumpsys activity activities 2>/dev/null | grep -E "topResumedActivity|
 adb logcat -d > diag/logcat-full.txt 2>&1
 grep -n -A45 "FATAL EXCEPTION" diag/logcat-full.txt > diag/crash.txt || echo "aucun FATAL EXCEPTION" > diag/crash.txt
 grep -n -i -E "appletv|AndroidRuntime" diag/logcat-full.txt | head -200 > diag/app-lines.txt
+find diag -type f -size 0 -delete
 exit 0
