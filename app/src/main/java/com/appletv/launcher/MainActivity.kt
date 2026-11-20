@@ -30,6 +30,7 @@ import androidx.leanback.widget.HorizontalGridView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -50,6 +51,7 @@ class MainActivity : ComponentActivity() {
     private var featured: List<Featured> = emptyList()
     private var featuredIndex = 0
     private var receiverRegistered = false
+    private var crashMode = false
 
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -59,8 +61,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CrashReporter.install(this)
         scale = Scale(this)
         window.setBackgroundDrawable(ColorDrawable(0xFF080A10.toInt()))
+
+        // Si le lanceur s'est arrêté la dernière fois, on affiche d'abord l'erreur à l'écran.
+        val report = CrashReporter.pending(this)
+        if (report != null) {
+            crashMode = true
+            setContentView(buildCrashScreen(report))
+            onBackPressedDispatcher.addCallback(this) {
+                CrashReporter.clear(this@MainActivity)
+                finish()
+            }
+            return
+        }
 
         adapter = AppAdapter(scale, ::onAppFocused, ::launchApp, ::openAppInfo)
         setContentView(buildUi())
@@ -79,6 +94,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        if (crashMode) return
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addAction(Intent.ACTION_PACKAGE_REMOVED)
@@ -189,10 +205,39 @@ class MainActivity : ComponentActivity() {
         return root
     }
 
+    private fun buildCrashScreen(report: String): View {
+        val lines = report.lines().take(24).joinToString("\n") { if (it.length > 150) it.take(150) else it }
+        val view = TextView(this).apply {
+            text = "Le lanceur s'est arrêté lors de la dernière utilisation.\n" +
+                "Photographie cet écran, puis appuie sur OK pour continuer.\n\n" + lines
+            setTextColor(Color.WHITE)
+            typeface = Typeface.MONOSPACE
+            scale.text(this, 21)
+            setPadding(scale.px(60), scale.px(40), scale.px(60), scale.px(40))
+            isFocusable = true
+            isFocusableInTouchMode = true
+            setOnClickListener {
+                CrashReporter.clear(this@MainActivity)
+                recreate()
+            }
+        }
+        view.post { view.requestFocus() }
+        return view
+    }
+
     private fun refreshApps() {
         refreshJob?.cancel()
         refreshJob = lifecycleScope.launch {
-            val list = AppRepository.load(applicationContext)
+            val list = try {
+                AppRepository.load(applicationContext)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                // On garde la trace (affichée au prochain lancement) sans faire planter l'écran.
+                CrashReporter.record(applicationContext, t)
+                emptyView.text = "Erreur de lecture des applications : ${t.javaClass.simpleName}"
+                emptyList<AppEntry>()
+            }
             val firstLoad = adapter.itemCount == 0
             adapter.submitList(list) {
                 emptyView.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE

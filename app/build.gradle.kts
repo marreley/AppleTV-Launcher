@@ -27,6 +27,17 @@ android {
         buildConfigField("String", "TMDB_API_KEY", "\"$tmdbKey\"")
     }
 
+    // Clé de débogage fixe (non secrète) : chaque build est signé pareil,
+    // donc une nouvelle version s'installe par-dessus l'ancienne sans désinstallation.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
