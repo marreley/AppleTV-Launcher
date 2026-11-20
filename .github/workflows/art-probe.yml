@@ -1,0 +1,25 @@
+name: Art probe
+on:
+  push:
+    branches: [art-probe]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ImageMagick
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick jq
+      - name: Probe
+        run: bash .github/art/probe.sh
+      - name: Publish
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: art-probe
+          name: Art probe
+          prerelease: true
+          files: |
+            out/sheet.jpg
+            out/candidates.txt
