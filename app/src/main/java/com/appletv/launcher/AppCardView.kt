@@ -70,6 +70,8 @@ class AppCardView(context: Context, private val s: Scale) : FrameLayout(context)
             icon.visibility = View.VISIBLE
         }
         resetLook()
+        // Si la liste est rafraîchie pendant que cette carte est sélectionnée, on garde l'agrandissement.
+        if (isFocused) setFocusedLook(true)
     }
 
     fun setFocusedLook(focused: Boolean) {
