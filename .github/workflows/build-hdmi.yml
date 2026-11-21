@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Import HDMI sources
-        run: unzip -o AppleTVLauncher-HDMI-v04.zip
+        run: unzip -o AppleTVLauncher-HDMI-v05.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,9 +30,9 @@ jobs:
           if-no-files-found: error
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: hdmi-v0.4.0
+          tag_name: hdmi-v0.5.0
           target_commitish: ${{ github.sha }}
-          name: Cinematic et Classic HDMI v0.4.0
+          name: Cinematic et Classic HDMI v0.5.0
           prerelease: true
           fail_on_unmatched_files: true
           files: dist/*.apk
