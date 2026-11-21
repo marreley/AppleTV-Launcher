@@ -1,0 +1,38 @@
+name: Build Cinematic and Classic HDMI APKs
+on:
+  push:
+    branches: [cinematic-classic-hdmi-v04]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import HDMI sources
+        run: unzip -o AppleTVLauncher-HDMI-v04.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build both APKs
+        run: bash gradlew assembleCinematicDebug assembleClassicDebug --stacktrace
+      - name: Prepare direct downloads
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/cinematic/debug/*.apk dist/Cinematic-HDMI.apk
+          cp app/build/outputs/apk/classic/debug/*.apk dist/Classic-HDMI.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cinematic-and-Classic-HDMI
+          path: dist/*.apk
+          if-no-files-found: error
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: hdmi-v0.4.0
+          target_commitish: ${{ github.sha }}
+          name: Cinematic et Classic HDMI v0.4.0
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: dist/*.apk
